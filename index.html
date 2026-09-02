@@ -19,7 +19,7 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{
     margin:0; padding:0; height:100%;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Devanagari",Helvetica,Arial,sans-serif;
     background:var(--sand);
     color:var(--ink);
   }
@@ -51,11 +51,23 @@
   header p{
     margin:1px 0 0; font-size:12px; color:#CFE0D2; font-weight:400;
   }
-  .reset-btn{
+  .header-actions{
     margin-left:auto;
+    display:flex; align-items:center; gap:6px;
+  }
+  .lang-toggle{
+    display:flex; background:rgba(255,255,255,0.14); border-radius:20px; padding:2px;
+  }
+  .lang-toggle button{
+    border:none; background:transparent; color:#CFE0D2;
+    font-size:12px; font-weight:600; padding:6px 10px; border-radius:18px;
+    cursor:pointer;
+  }
+  .lang-toggle button.active{ background:var(--marigold); color:var(--ivy); }
+  .reset-btn{
     background:rgba(255,255,255,0.12);
     border:none; color:var(--white);
-    font-size:11px; padding:6px 10px; border-radius:20px;
+    font-size:11px; padding:7px 10px; border-radius:20px;
     cursor:pointer;
   }
 
@@ -71,7 +83,7 @@
     padding:10px 13px;
     border-radius:14px;
     font-size:14.5px;
-    line-height:1.48;
+    line-height:1.5;
     white-space:pre-wrap;
     animation:rise .18s ease-out;
   }
@@ -167,9 +179,15 @@
   <div class="header-badge">LS</div>
   <div>
     <h1>LokOS Sahayak</h1>
-    <p>Field staff support · answers anytime</p>
+    <p id="subtitle">Field staff support · answers anytime</p>
   </div>
-  <button class="reset-btn" onclick="resetChat()">Restart</button>
+  <div class="header-actions">
+    <div class="lang-toggle">
+      <button id="langEnBtn" class="active" onclick="setLang('en')">EN</button>
+      <button id="langHiBtn" onclick="setLang('hi')">हिं</button>
+    </div>
+    <button class="reset-btn" onclick="resetChat()">Restart</button>
+  </div>
 </header>
 
 <div id="chat"></div>
@@ -182,61 +200,189 @@
 <script>
 /* ========================================================
    KNOWLEDGE BASE — edit this array to add/update Q&A.
-   Each entry: id, keywords (lowercase, match if ANY found),
-   answer (shown as bot reply), escalateHint (optional extra
-   line shown only when user says it's still not resolved).
+   Each entry has bilingual fields:
+     label      : {en, hi}  — short topic chip label
+     keywords   : array of lowercase words/phrases in BOTH
+                  English and Hindi (Devanagari or Hinglish)
+                  that should trigger this entry
+     answer     : {en, hi}  — the fix steps shown to the user
+     escalateHint: {en, hi} — shown only if user says it's
+                  still not resolved
    ======================================================== */
 const KB = [
   {
     id: "LOGIN-01",
-    keywords: ["otp", "login", "log in", "sign in", "password"],
-    answer: "OTP / Login issue:\n1. Check network signal, wait 60 seconds and retry.\n2. Confirm your mobile number matches the one registered in your LokOS profile.\n3. Try 'Resend OTP' — max 3 attempts, then wait 10 minutes.\n4. Check if DND is active on your SIM.",
-    escalateHint: "If your registered number itself is wrong or changed, this needs an admin correction — I'll log it for you."
+    label: { en: "OTP / Login", hi: "OTP / लॉगिन" },
+    keywords: ["otp", "login", "log in", "sign in", "password",
+               "लॉगिन", "ओटीपी", "पासवर्ड"],
+    answer: {
+      en: "OTP / Login issue:\n1. Check network signal, wait 60 seconds and retry.\n2. Confirm your mobile number matches the one registered in your LokOS profile.\n3. Try 'Resend OTP' — max 3 attempts, then wait 10 minutes.\n4. Check if DND is active on your SIM.",
+      hi: "OTP / लॉगिन समस्या:\n1. नेटवर्क सिग्नल चेक करें, 60 सेकंड रुककर दोबारा कोशिश करें।\n2. सुनिश्चित करें कि आपका मोबाइल नंबर LokOS प्रोफ़ाइल में रजिस्टर्ड नंबर से मेल खाता है।\n3. 'Resend OTP' आज़माएं — अधिकतम 3 बार, फिर 10 मिनट रुकें।\n4. जांचें कि आपकी SIM पर DND एक्टिव तो नहीं है।"
+    },
+    escalateHint: {
+      en: "If your registered number itself is wrong or changed, this needs an admin correction — I'll log it for you.",
+      hi: "अगर आपका रजिस्टर्ड नंबर ही गलत है या बदल गया है, तो इसे एडमिन से ठीक करवाना होगा — मैं इसे लॉग कर दूँगा।"
+    }
   },
   {
     id: "AADHAAR-01",
-    keywords: ["aadhaar", "adhar", "ekyc", "kyc", "verification failed"],
-    answer: "Aadhaar verification issue:\n1. Re-check the spelling of the name exactly as printed on the Aadhaar card — no short forms.\n2. Confirm date of birth format is correct.\n3. Retry on a stronger network connection.\n4. If it still fails, use the manual Aadhaar upload + offline verification option.",
-    escalateHint: "If it fails again after 3 tries with correct data, this is likely a backend/UIDAI-side issue."
+    label: { en: "Aadhaar", hi: "आधार" },
+    keywords: ["aadhaar", "adhar", "ekyc", "kyc", "verification failed",
+               "आधार", "सत्यापन", "ekyc फेल"],
+    answer: {
+      en: "Aadhaar verification issue:\n1. Re-check the spelling of the name exactly as printed on the Aadhaar card — no short forms.\n2. Confirm date of birth format is correct.\n3. Retry on a stronger network connection.\n4. If it still fails, use the manual Aadhaar upload + offline verification option.",
+      hi: "आधार सत्यापन समस्या:\n1. नाम की स्पेलिंग आधार कार्ड पर छपी हुई के अनुसार ही जांचें — शॉर्ट फॉर्म न लिखें।\n2. जन्म तिथि का फॉर्मेट सही है यह सुनिश्चित करें।\n3. बेहतर नेटवर्क कनेक्शन पर दोबारा कोशिश करें।\n4. फिर भी न हो तो मैनुअल आधार अपलोड + ऑफ़लाइन सत्यापन विकल्प का उपयोग करें।"
+    },
+    escalateHint: {
+      en: "If it fails again after 3 tries with correct data, this is likely a backend/UIDAI-side issue.",
+      hi: "अगर सही जानकारी के बावजूद 3 बार फिर फेल हो, तो यह बैकएंड/UIDAI की तरफ़ की समस्या हो सकती है।"
+    }
   },
   {
     id: "SYNC-01",
-    keywords: ["sync", "syncing", "upload", "not uploading", "offline"],
-    answer: "Data not syncing:\n1. Move to an area with a stable network connection.\n2. Do not close the app while sync is in progress.\n3. Check your device storage isn't full.\n4. Use the 'Retry Sync' option from the app menu.",
-    escalateHint: "If it shows 'synced' on your device but isn't visible on the admin dashboard after 24 hours, that's a backend issue — I'll log it."
+    label: { en: "Sync issue", hi: "सिंक समस्या" },
+    keywords: ["sync", "syncing", "upload", "not uploading", "offline",
+               "सिंक", "अपलोड नहीं", "डेटा नहीं गया"],
+    answer: {
+      en: "Data not syncing:\n1. Move to an area with a stable network connection.\n2. Do not close the app while sync is in progress.\n3. Check your device storage isn't full.\n4. Use the 'Retry Sync' option from the app menu.",
+      hi: "डेटा सिंक नहीं हो रहा:\n1. स्थिर नेटवर्क वाली जगह पर जाएं।\n2. सिंक होते समय ऐप को बंद न करें।\n3. जांचें कि आपके डिवाइस की स्टोरेज फुल तो नहीं है।\n4. ऐप मेन्यू से 'Retry Sync' विकल्प इस्तेमाल करें।"
+    },
+    escalateHint: {
+      en: "If it shows 'synced' on your device but isn't visible on the admin dashboard after 24 hours, that's a backend issue — I'll log it.",
+      hi: "अगर आपके डिवाइस पर 'synced' दिख रहा है पर 24 घंटे बाद भी एडमिन डैशबोर्ड पर नहीं दिख रहा, तो यह बैकएंड समस्या है — मैं इसे लॉग कर दूँगा।"
+    }
   },
   {
     id: "LOAN-01",
-    keywords: ["loan", "disbursement", "approval", "application stuck"],
-    answer: "Loan application stuck:\n1. Check the current status/stage shown in the app.\n2. Note which role needs to approve next — VO, CLF, or Bank level.\n3. Follow up directly with that specific approver — this is usually a pending-approval matter, not a technical fault.",
-    escalateHint: "If it has been stuck beyond 7 days with no movement at all, I'll log this for an MIS/admin check."
+    label: { en: "Loan status", hi: "लोन स्थिति" },
+    keywords: ["loan", "disbursement", "approval", "application stuck",
+               "लोन", "स्वीकृति", "वितरण", "अटका हुआ"],
+    answer: {
+      en: "Loan application stuck:\n1. Check the current status/stage shown in the app.\n2. Note which role needs to approve next — VO, CLF, or Bank level.\n3. Follow up directly with that specific approver — this is usually a pending-approval matter, not a technical fault.",
+      hi: "लोन आवेदन अटका हुआ है:\n1. ऐप में दिख रही मौजूदा स्थिति/चरण देखें।\n2. जानें कि अगला अनुमोदन किस स्तर पर लंबित है — VO, CLF या बैंक स्तर।\n3. उस संबंधित अनुमोदक से सीधे संपर्क करें — यह आमतौर पर तकनीकी खराबी नहीं, बल्कि लंबित अनुमोदन का मामला होता है।"
+    },
+    escalateHint: {
+      en: "If it has been stuck beyond 7 days with no movement at all, I'll log this for an MIS/admin check.",
+      hi: "अगर 7 दिन से ज़्यादा हो गए और कोई प्रगति नहीं हुई, तो मैं इसे MIS/एडमिन जांच के लिए लॉग कर दूँगा।"
+    }
   },
   {
     id: "DOC-01",
-    keywords: ["document", "photo", "upload failed", "pdf", "id proof"],
-    answer: "Document upload issue:\n1. Check file size — very large photos may fail to upload.\n2. Ensure the file is in the accepted format (PDF/JPEG).\n3. Retry on a stronger connection.\n4. Restart the app if the upload screen is frozen.",
-    escalateHint: "If the same document keeps failing after these steps, I'll log it for a technical check."
+    label: { en: "Document upload", hi: "दस्तावेज़ अपलोड" },
+    keywords: ["document", "photo", "upload failed", "pdf", "id proof",
+               "दस्तावेज़", "फोटो", "अपलोड फेल", "आईडी प्रूफ"],
+    answer: {
+      en: "Document upload issue:\n1. Check file size — very large photos may fail to upload.\n2. Ensure the file is in the accepted format (PDF/JPEG).\n3. Retry on a stronger connection.\n4. Restart the app if the upload screen is frozen.",
+      hi: "दस्तावेज़ अपलोड समस्या:\n1. फ़ाइल का साइज़ जांचें — बहुत बड़ी फोटो अपलोड नहीं हो पाती।\n2. फ़ाइल सही फॉर्मेट (PDF/JPEG) में होनी चाहिए।\n3. बेहतर नेटवर्क पर दोबारा कोशिश करें।\n4. अगर अपलोड स्क्रीन अटक जाए तो ऐप रीस्टार्ट करें।"
+    },
+    escalateHint: {
+      en: "If the same document keeps failing after these steps, I'll log it for a technical check.",
+      hi: "अगर वही दस्तावेज़ बार-बार फेल हो रहा है, तो मैं इसे तकनीकी जांच के लिए लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "MEETING-01",
+    label: { en: "Meeting entry", hi: "बैठक प्रविष्टि" },
+    keywords: ["meeting", "attendance", "transaction entry", "savings entry", "wrong amount entered",
+               "बैठक", "उपस्थिति", "लेनदेन", "बचत प्रविष्टि", "गलत राशि"],
+    answer: {
+      en: "Meeting / transaction entry issue:\n1. Confirm you selected the correct SHG/VO/CLF before entering data — wrong entity selection is the most common cause of mismatched entries.\n2. If an amount was entered wrong, use the edit/correction option before final submission — once submitted, it may need admin-level correction.\n3. Make sure all member attendance is marked before saving the meeting.\n4. If the meeting won't save at all, check network connection and retry.",
+      hi: "बैठक / लेनदेन प्रविष्टि समस्या:\n1. डेटा दर्ज करने से पहले सही SHG/VO/CLF चुना है, यह सुनिश्चित करें — गलत इकाई चुनना सबसे सामान्य गलती है।\n2. अगर राशि गलत दर्ज हो गई है, तो अंतिम सबमिशन से पहले एडिट/सुधार विकल्प का उपयोग करें — सबमिट होने के बाद एडमिन स्तर पर सुधार करना पड़ सकता है।\n3. बैठक सेव करने से पहले सभी सदस्यों की उपस्थिति दर्ज करें।\n4. अगर बैठक सेव ही नहीं हो रही, तो नेटवर्क कनेक्शन जांचकर दोबारा कोशिश करें।"
+    },
+    escalateHint: {
+      en: "If an already-submitted entry needs correction and there's no edit option visible, I'll log it for admin-level correction.",
+      hi: "अगर पहले से सबमिट हो चुकी प्रविष्टि में सुधार चाहिए और एडिट विकल्प नहीं दिख रहा, तो मैं इसे एडमिन-स्तर सुधार के लिए लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "PROFILE-01",
+    label: { en: "Profile issue", hi: "प्रोफ़ाइल समस्या" },
+    keywords: ["profile", "member details", "wrong name", "spelling", "duplicate member",
+               "प्रोफ़ाइल", "सदस्य विवरण", "नाम गलत", "स्पेलिंग", "डुप्लीकेट सदस्य"],
+    answer: {
+      en: "Member / SHG / VO / CLF profile issue:\n1. For spelling or detail corrections, check if the 'Edit Profile' option is available for that record.\n2. For a duplicate member showing up, do not create a fresh entry — this needs to be merged/flagged, not re-entered.\n3. Confirm the correct hierarchy (SHG under correct VO, VO under correct CLF) before making changes.",
+      hi: "सदस्य / SHG / VO / CLF प्रोफ़ाइल समस्या:\n1. स्पेलिंग या विवरण सुधार के लिए, उस रिकॉर्ड में 'Edit Profile' विकल्प उपलब्ध है या नहीं जांचें।\n2. अगर कोई सदस्य डुप्लीकेट दिख रहा है, तो नई प्रविष्टि न बनाएं — इसे मर्ज/फ्लैग करवाना होगा, दोबारा एंट्री नहीं करनी है।\n3. बदलाव करने से पहले सही पदानुक्रम (सही VO के अंतर्गत SHG, सही CLF के अंतर्गत VO) सुनिश्चित करें।"
+    },
+    escalateHint: {
+      en: "Duplicate records and locked profile fields need an admin-level fix — I'll log the details.",
+      hi: "डुप्लीकेट रिकॉर्ड और लॉक की गई प्रोफ़ाइल फ़ील्ड्स के लिए एडमिन-स्तर सुधार चाहिए — मैं विवरण लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "CRASH-01",
+    label: { en: "App crash", hi: "ऐप क्रैश" },
+    keywords: ["crash", "hang", "freeze", "slow", "not opening", "app closed",
+               "क्रैश", "हैंग", "अटक गया", "धीमा", "खुल नहीं रहा", "बंद हो गया"],
+    answer: {
+      en: "App crashing / freezing / slow:\n1. Force-close the app fully and reopen it.\n2. Check for a pending app update in the Play Store.\n3. Restart your phone if the issue continues.\n4. Free up storage space — a nearly-full device commonly causes slowdowns and crashes.\n5. Make sure you're on a reasonably recent version of your phone's operating system.",
+      hi: "ऐप क्रैश / हैंग / धीमा होना:\n1. ऐप को पूरी तरह बंद करें और दोबारा खोलें।\n2. Play Store में कोई पेंडिंग अपडेट है या नहीं जांचें।\n3. समस्या बनी रहे तो फ़ोन रीस्टार्ट करें।\n4. स्टोरेज स्पेस खाली करें — लगभग फुल डिवाइस अक्सर धीमापन और क्रैश की वजह बनता है।\n5. सुनिश्चित करें कि आपके फ़ोन का ऑपरेटिंग सिस्टम अपेक्षाकृत नया वर्ज़न है।"
+    },
+    escalateHint: {
+      en: "If the app crashes on a specific screen every time even after these steps, I'll log the exact screen for a technical check.",
+      hi: "अगर इन स्टेप्स के बाद भी ऐप किसी खास स्क्रीन पर हर बार क्रैश होता है, तो मैं तकनीकी जांच के लिए वह स्क्रीन लॉग कर दूँगा।"
+    }
   }
 ];
 
-const GREETING =
-`Namaste! I'm LokOS Sahayak — here to help with common app issues, anytime.
+const STRINGS = {
+  en: {
+    subtitle: "Field staff support · answers anytime",
+    placeholder: "Type your question…",
+    send: "Send",
+    reset: "Restart",
+    you: "You",
+    bot: "Sahayak",
+    greeting: "Namaste! I'm LokOS Sahayak — here to help with common app issues, anytime.\n\nPick a topic below, or just type your question in your own words.",
+    notFound: "I couldn't find a direct match for that yet. Try different words, pick a topic below, or tell me it's \"not resolved\" and I'll log it for the support team.",
+    resolvedReply: "Glad that helped! Ask another question anytime.",
+    askResolved: "Did this solve it? Type \"resolved\" or \"not resolved\".",
+    escalateDefault: "Still stuck? I'll log this so the support team can follow up.",
+    escalateDefaultUnmatched: "I'll log this question so the support team can follow up.",
+    logButton: "Log this for support",
+    loggedPrefix: "Logged. Reference: ",
+    loggedNote: "The support team can review logged questions and add this topic to the guide."
+  },
+  hi: {
+    subtitle: "फील्ड स्टाफ सहायता · हर समय उपलब्ध",
+    placeholder: "अपना सवाल टाइप करें…",
+    send: "भेजें",
+    reset: "फिर से शुरू करें",
+    you: "आप",
+    bot: "सहायक",
+    greeting: "नमस्ते! मैं LokOS सहायक हूँ — सामान्य ऐप समस्याओं में मदद के लिए, हर समय उपलब्ध।\n\nनीचे कोई विषय चुनें, या अपने शब्दों में सवाल टाइप करें।",
+    notFound: "इसके लिए सीधा जवाब नहीं मिला। अलग शब्दों में कोशिश करें, नीचे कोई विषय चुनें, या \"not resolved\" लिखें — मैं इसे सहायता टीम के लिए लॉग कर दूँगा।",
+    resolvedReply: "अच्छा लगा कि इससे मदद मिली! कभी भी दूसरा सवाल पूछें।",
+    askResolved: "क्या इससे समस्या हल हुई? \"resolved\" या \"not resolved\" टाइप करें।",
+    escalateDefault: "अभी भी समस्या है? मैं इसे सहायता टीम के लिए लॉग कर दूँगा।",
+    escalateDefaultUnmatched: "मैं इस सवाल को सहायता टीम के लिए लॉग कर दूँगा।",
+    logButton: "सहायता के लिए लॉग करें",
+    loggedPrefix: "लॉग हो गया। संदर्भ: ",
+    loggedNote: "सहायता टीम लॉग किए गए सवालों की समीक्षा कर सकती है और इस विषय को गाइड में जोड़ सकती है।"
+  }
+};
 
-Pick a topic below, or just type your question in your own words.`;
-
-const NOT_FOUND =
-`I couldn't find a direct match for that yet. Try different words, pick a topic below, or tell me it's "not resolved" and I'll log it for the support team.`;
-
+let lang = 'en';
 let lastMatched = null; // holds last matched KB entry for escalation context
 
 const chat = document.getElementById('chat');
 const input = document.getElementById('textInput');
 
+function setLang(l){
+  lang = l;
+  document.getElementById('langEnBtn').classList.toggle('active', l === 'en');
+  document.getElementById('langHiBtn').classList.toggle('active', l === 'hi');
+  document.getElementById('subtitle').textContent = STRINGS[lang].subtitle;
+  input.placeholder = STRINGS[lang].placeholder;
+  document.getElementById('sendBtn').textContent = STRINGS[lang].send;
+  document.querySelector('.reset-btn').textContent = STRINGS[lang].reset;
+  resetChat();
+}
+
 function addMsg(text, who){
   const div = document.createElement('div');
   div.className = 'msg ' + who;
   const label = document.createElement('strong');
-  label.textContent = who === 'bot' ? 'Sahayak' : 'You';
+  label.textContent = who === 'bot' ? STRINGS[lang].bot : STRINGS[lang].you;
   div.appendChild(label);
   div.appendChild(document.createTextNode(text));
   chat.appendChild(div);
@@ -246,18 +392,11 @@ function addMsg(text, who){
 function addChips(){
   const wrap = document.createElement('div');
   wrap.className = 'chips';
-  const topics = [
-    ["OTP / Login", "otp login issue"],
-    ["Aadhaar", "aadhaar verification issue"],
-    ["Sync issue", "data not syncing"],
-    ["Loan status", "loan application stuck"],
-    ["Document upload", "document upload failed"]
-  ];
-  topics.forEach(([label, query])=>{
+  KB.forEach(entry=>{
     const c = document.createElement('button');
     c.className = 'chip';
-    c.textContent = label;
-    c.onclick = ()=> submitQuery(query, label);
+    c.textContent = entry.label[lang];
+    c.onclick = ()=> submitQuery(entry.keywords[0], entry.label[lang]);
     wrap.appendChild(c);
   });
   chat.appendChild(wrap);
@@ -269,17 +408,19 @@ function findMatch(query){
   let best = null, bestScore = 0;
   KB.forEach(entry=>{
     let score = 0;
-    entry.keywords.forEach(k=>{ if(q.includes(k)) score++; });
+    entry.keywords.forEach(k=>{ if(q.includes(k.toLowerCase())) score++; });
     if(score > bestScore){ bestScore = score; best = entry; }
   });
   return bestScore > 0 ? best : null;
 }
 
 function isResolvedSaid(q){
-  return /\b(resolved|solved|thanks|thank you|fixed|works|ok got it|okay got it)\b/i.test(q);
+  return /\b(resolved|solved|thanks|thank you|fixed|works|ok got it|okay got it)\b/i.test(q) ||
+         /(हल हो गया|धन्यवाद|शुक्रिया|ठीक हो गया)/.test(q);
 }
 function isNotResolvedSaid(q){
-  return /\b(not resolved|not working|still|didn'?t work|no|escalate|need help|talk to someone|human)\b/i.test(q);
+  return /\b(not resolved|not working|still|didn'?t work|no|escalate|need help|talk to someone|human)\b/i.test(q) ||
+         /(हल नहीं|काम नहीं|अभी भी|नहीं हुआ)/.test(q);
 }
 
 function submitQuery(query, displayLabel){
@@ -293,7 +434,7 @@ function respondTo(query){
     return;
   }
   if(isResolvedSaid(query)){
-    addMsg("Glad that helped! Ask another question anytime.", 'bot');
+    addMsg(STRINGS[lang].resolvedReply, 'bot');
     addChips();
     return;
   }
@@ -301,11 +442,11 @@ function respondTo(query){
   const match = findMatch(query);
   if(match){
     lastMatched = match;
-    addMsg(match.answer, 'bot');
-    addMsg('Did this solve it? Type "resolved" or "not resolved".', 'bot');
+    addMsg(match.answer[lang], 'bot');
+    addMsg(STRINGS[lang].askResolved, 'bot');
   } else {
     lastMatched = null;
-    addMsg(NOT_FOUND, 'bot');
+    addMsg(STRINGS[lang].notFound, 'bot');
     showEscalation(null, query);
   }
 }
@@ -313,9 +454,10 @@ function respondTo(query){
 function showEscalation(entry, originalQuery){
   const box = document.createElement('div');
   box.className = 'escalate-box';
-  box.innerHTML =
-    (entry ? (entry.escalateHint || "Still stuck? I'll log this so the support team can follow up.") : "I'll log this question so the support team can follow up.") +
-    "<br><button type='button'>Log this for support</button>";
+  const hintText = entry
+    ? (entry.escalateHint ? entry.escalateHint[lang] : STRINGS[lang].escalateDefault)
+    : STRINGS[lang].escalateDefaultUnmatched;
+  box.innerHTML = hintText + "<br><button type='button'>" + STRINGS[lang].logButton + "</button>";
   box.querySelector('button').onclick = ()=> logEscalation(entry, originalQuery, box);
   chat.appendChild(box);
   chat.scrollTop = chat.scrollHeight;
@@ -325,14 +467,16 @@ function logEscalation(entry, originalQuery, box){
   const ticket = {
     time: new Date().toISOString(),
     category: entry ? entry.id : 'UNMATCHED',
-    query: originalQuery
+    query: originalQuery,
+    lang: lang
   };
   try{
     const existing = JSON.parse(localStorage.getItem('lokos_tickets') || '[]');
     existing.push(ticket);
     localStorage.setItem('lokos_tickets', JSON.stringify(existing));
   }catch(e){}
-  box.innerHTML = "Logged. Reference: " + ticket.time.slice(0,16).replace('T',' ') + "<br><span style='font-size:12px;opacity:.7'>The support team can review logged questions and add this topic to the guide.</span>";
+  box.innerHTML = STRINGS[lang].loggedPrefix + ticket.time.slice(0,16).replace('T',' ') +
+    "<br><span style='font-size:12px;opacity:.7'>" + STRINGS[lang].loggedNote + "</span>";
   addChips();
 }
 
@@ -350,7 +494,7 @@ input.addEventListener('keydown', function(e){
 function resetChat(){
   chat.innerHTML = '';
   lastMatched = null;
-  addMsg(GREETING, 'bot');
+  addMsg(STRINGS[lang].greeting, 'bot');
   addChips();
 }
 
