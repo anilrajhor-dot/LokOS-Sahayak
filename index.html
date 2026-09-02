@@ -321,6 +321,104 @@ const KB = [
       en: "If the app crashes on a specific screen every time even after these steps, I'll log the exact screen for a technical check.",
       hi: "अगर इन स्टेप्स के बाद भी ऐप किसी खास स्क्रीन पर हर बार क्रैश होता है, तो मैं तकनीकी जांच के लिए वह स्क्रीन लॉग कर दूँगा।"
     }
+  },
+  {
+    id: "UPDATE-01",
+    label: { en: "App update", hi: "ऐप अपडेट" },
+    keywords: ["update", "new version", "old version", "update available",
+               "अपडेट", "नया वर्ज़न", "पुराना वर्ज़न"],
+    answer: {
+      en: "App update issue:\n1. Open the Play Store, search LokOS, and check if an 'Update' button is showing instead of 'Open'.\n2. Make sure you have enough free storage — updates can fail silently if storage is nearly full.\n3. Connect to Wi-Fi if the update is large and mobile data is slow.\n4. After updating, fully close and reopen the app once before continuing work.",
+      hi: "ऐप अपडेट समस्या:\n1. Play Store खोलें, LokOS सर्च करें, और देखें कि 'Open' की जगह 'Update' बटन तो नहीं दिख रहा।\n2. पर्याप्त स्टोरेज खाली है यह सुनिश्चित करें — स्टोरेज लगभग फुल होने पर अपडेट बिना बताए फेल हो सकता है।\n3. अगर अपडेट बड़ा है और मोबाइल डेटा धीमा है, तो Wi-Fi से जुड़ें।\n4. अपडेट के बाद, काम शुरू करने से पहले एक बार ऐप को पूरी तरह बंद करके दोबारा खोलें।"
+    },
+    escalateHint: {
+      en: "If the update itself fails repeatedly or the app misbehaves after updating, I'll log the device model and Android version for a technical check.",
+      hi: "अगर अपडेट बार-बार फेल हो रहा है या अपडेट के बाद ऐप ठीक से काम नहीं कर रहा, तो मैं डिवाइस मॉडल और Android वर्ज़न तकनीकी जांच के लिए लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "PERMISSION-01",
+    label: { en: "Camera / storage access", hi: "कैमरा / स्टोरेज अनुमति" },
+    keywords: ["permission", "camera not working", "storage access", "access denied", "allow access",
+               "अनुमति", "कैमरा नहीं", "स्टोरेज एक्सेस", "एक्सेस नहीं"],
+    answer: {
+      en: "Camera / storage permission issue:\n1. Go to your phone's Settings > Apps > LokOS > Permissions.\n2. Turn ON Camera, Storage/Photos, and Location permissions.\n3. Restart the app after changing permissions.\n4. If permissions are greyed out, check if the phone is under a company/MDM restriction.",
+      hi: "कैमरा / स्टोरेज अनुमति समस्या:\n1. फ़ोन की Settings > Apps > LokOS > Permissions में जाएं।\n2. Camera, Storage/Photos और Location की अनुमति ON करें।\n3. अनुमति बदलने के बाद ऐप को रीस्टार्ट करें।\n4. अगर अनुमतियां ग्रे दिख रही हैं, तो जांचें कि फ़ोन पर कोई कंपनी/MDM प्रतिबंध तो नहीं है।"
+    },
+    escalateHint: {
+      en: "If permissions are correctly ON but the camera/storage still doesn't work inside the app, I'll log this as a possible app bug.",
+      hi: "अगर अनुमतियां सही से ON हैं फिर भी ऐप में कैमरा/स्टोरेज काम नहीं कर रहा, तो मैं इसे संभावित ऐप बग के रूप में लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "LANGUAGE-01",
+    label: { en: "Change app language", hi: "ऐप भाषा बदलें" },
+    keywords: ["language", "hindi setting", "change language", "english setting",
+               "भाषा", "हिंदी सेटिंग", "भाषा बदलें"],
+    answer: {
+      en: "Changing app language:\n1. Open the app menu (usually the profile icon or three-line menu).\n2. Look for 'Language' or 'भाषा' in Settings.\n3. Select your preferred language and confirm.\n4. Some screens may need an app restart to fully switch language.",
+      hi: "ऐप की भाषा बदलना:\n1. ऐप मेन्यू खोलें (आमतौर पर प्रोफ़ाइल आइकन या तीन-लाइन मेन्यू)।\n2. Settings में 'Language' या 'भाषा' विकल्प देखें।\n3. अपनी पसंदीदा भाषा चुनें और पुष्टि करें।\n4. भाषा पूरी तरह बदलने के लिए कुछ स्क्रीन पर ऐप रीस्टार्ट करना पड़ सकता है।"
+    },
+    escalateHint: {
+      en: "If some screens still show the wrong language after switching and restarting, I'll log which screens.",
+      hi: "अगर भाषा बदलने और रीस्टार्ट करने के बाद भी कुछ स्क्रीन गलत भाषा में दिख रही हैं, तो मैं वे स्क्रीन लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "PIN-01",
+    label: { en: "Forgot PIN / password", hi: "PIN / पासवर्ड भूल गए" },
+    keywords: ["forgot pin", "forgot password", "reset pin", "change password", "locked account",
+               "पिन भूल", "पासवर्ड भूल", "पिन रीसेट", "खाता लॉक"],
+    answer: {
+      en: "Forgot PIN / password:\n1. On the login screen, look for 'Forgot PIN' or 'Forgot Password'.\n2. Verify your identity via the registered mobile OTP.\n3. Set a new PIN/password — avoid simple sequences like 1234.\n4. If the account shows 'locked' after too many attempts, wait 15-30 minutes before retrying.",
+      hi: "PIN / पासवर्ड भूल गए:\n1. लॉगिन स्क्रीन पर 'Forgot PIN' या 'Forgot Password' देखें।\n2. रजिस्टर्ड मोबाइल OTP से पहचान सत्यापित करें।\n3. नया PIN/पासवर्ड सेट करें — 1234 जैसी आसान संख्या न रखें।\n4. अगर बहुत बार गलत प्रयास के बाद खाता 'locked' दिखे, तो 15-30 मिनट रुककर दोबारा कोशिश करें।"
+    },
+    escalateHint: {
+      en: "If 'Forgot PIN' doesn't send an OTP or the account stays locked beyond 30 minutes, I'll log this for an admin-level reset.",
+      hi: "अगर 'Forgot PIN' से OTP नहीं आता या खाता 30 मिनट से ज़्यादा लॉक रहता है, तो मैं इसे एडमिन-स्तर रीसेट के लिए लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "GPS-01",
+    label: { en: "GPS / location", hi: "GPS / लोकेशन" },
+    keywords: ["gps", "location not detected", "location off", "map not showing",
+               "जीपीएस", "लोकेशन नहीं", "लोकेशन बंद", "मैप नहीं दिख"],
+    answer: {
+      en: "GPS / location not detecting:\n1. Turn ON Location/GPS in your phone's quick settings.\n2. Set location accuracy mode to 'High accuracy' if available.\n3. Go outdoors or near a window — GPS is weak indoors/underground.\n4. Confirm the app has Location permission (see the Camera/Storage access topic for steps).",
+      hi: "GPS / लोकेशन नहीं मिल रही:\n1. फ़ोन की क्विक सेटिंग्स में Location/GPS ON करें।\n2. यदि उपलब्ध हो तो लोकेशन एक्युरेसी को 'High accuracy' मोड पर सेट करें।\n3. बाहर या खिड़की के पास जाएं — घर के अंदर/भूतल पर GPS कमज़ोर रहता है।\n4. सुनिश्चित करें कि ऐप को Location अनुमति दी गई है (देखें: कैमरा/स्टोरेज अनुमति विषय)।"
+    },
+    escalateHint: {
+      en: "If location still fails to lock outdoors with GPS ON, I'll log the device model — some older phones have GPS hardware issues.",
+      hi: "अगर GPS ON होने और बाहर होने पर भी लोकेशन लॉक नहीं हो रही, तो मैं डिवाइस मॉडल लॉग कर दूँगा — कुछ पुराने फ़ोन में GPS हार्डवेयर समस्या होती है।"
+    }
+  },
+  {
+    id: "REPORT-01",
+    label: { en: "Reports / download", hi: "रिपोर्ट / डाउनलोड" },
+    keywords: ["report", "download", "export", "pdf report", "not generating",
+               "रिपोर्ट", "डाउनलोड", "एक्सपोर्ट", "जनरेट नहीं"],
+    answer: {
+      en: "Report not generating / downloading:\n1. Make sure you're connected to the internet — most reports are generated on the server, not offline.\n2. Check your phone's Downloads folder — some reports save silently without a popup.\n3. If the report is large (long date range or many members), allow extra time before retrying.\n4. Grant Storage permission if the download seems to start but the file isn't found.",
+      hi: "रिपोर्ट जनरेट / डाउनलोड नहीं हो रही:\n1. इंटरनेट से जुड़े होना सुनिश्चित करें — अधिकतर रिपोर्ट सर्वर पर बनती हैं, ऑफ़लाइन नहीं।\n2. फ़ोन के Downloads फ़ोल्डर में जांचें — कुछ रिपोर्ट बिना पॉपअप दिखाए सेव हो जाती हैं।\n3. अगर रिपोर्ट बड़ी है (लंबी तारीख सीमा या कई सदस्य), तो दोबारा कोशिश करने से पहले थोड़ा समय दें।\n4. अगर डाउनलोड शुरू होता दिखे पर फ़ाइल न मिले, तो Storage अनुमति दें।"
+    },
+    escalateHint: {
+      en: "If the report consistently fails or shows incorrect data, I'll log the exact report type and date range used.",
+      hi: "अगर रिपोर्ट लगातार फेल हो रही है या गलत डेटा दिखा रही है, तो मैं सही रिपोर्ट प्रकार और उपयोग की गई तारीख सीमा लॉग कर दूँगा।"
+    }
+  },
+  {
+    id: "TRAINING-01",
+    label: { en: "Training platform", hi: "प्रशिक्षण प्लेटफ़ॉर्म" },
+    keywords: ["training", "course", "certificate", "learning platform", "assessment",
+               "प्रशिक्षण", "कोर्स", "सर्टिफिकेट", "लर्निंग", "मूल्यांकन"],
+    answer: {
+      en: "LokOS Training / Learning platform issue:\n1. Log in using the same LokOS credentials, or register fresh if it's your first time on the training platform.\n2. Browse courses by language and skill level from the course list.\n3. Complete the course fully before attempting the assessment — certificates only issue after passing.\n4. If a certificate doesn't appear after passing, check the 'My Certificates' section before assuming it failed.",
+      hi: "LokOS प्रशिक्षण / लर्निंग प्लेटफ़ॉर्म समस्या:\n1. वही LokOS क्रेडेंशियल्स से लॉगिन करें, या पहली बार है तो नया रजिस्ट्रेशन करें।\n2. कोर्स लिस्ट से भाषा और स्तर के अनुसार कोर्स चुनें।\n3. मूल्यांकन देने से पहले कोर्स पूरा करें — सर्टिफिकेट पास होने के बाद ही मिलता है।\n4. पास होने के बाद सर्टिफिकेट न दिखे तो पहले 'My Certificates' सेक्शन जांचें, फेल न मानें।"
+    },
+    escalateHint: {
+      en: "If a passed assessment still shows no certificate after checking 'My Certificates', I'll log this for a platform-side check.",
+      hi: "अगर 'My Certificates' जांचने के बाद भी पास किए गए मूल्यांकन का सर्टिफिकेट नहीं दिख रहा, तो मैं इसे प्लेटफ़ॉर्म-स्तर जांच के लिए लॉग कर दूँगा।"
+    }
   }
 ];
 
