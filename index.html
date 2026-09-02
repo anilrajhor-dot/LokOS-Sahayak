@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LokOS Sahayak — Field Staff Support</title>
+<style>
+  :root{
+    --ivy: #1F3D2B;
+    --ivy-light: #2E5540;
+    --sand: #EFE6D0;
+    --sand-dark: #E0D3AF;
+    --moss: #7C9473;
+    --marigold: #D9A441;
+    --ink: #2B2B26;
+    --white: #FFFFFF;
+    --danger: #B4482F;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--sand);
+    color:var(--ink);
+  }
+  body{
+    display:flex; flex-direction:column;
+    height:100vh; height:100dvh;
+    overflow:hidden;
+  }
+
+  /* Header */
+  header{
+    background:var(--ivy);
+    color:var(--white);
+    padding:14px 16px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  }
+  .header-badge{
+    width:38px; height:38px; border-radius:10px;
+    background:var(--marigold);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:17px; color:var(--ivy);
+    flex-shrink:0;
+  }
+  header h1{
+    font-size:16px; margin:0; font-weight:600; line-height:1.25;
+  }
+  header p{
+    margin:1px 0 0; font-size:12px; color:#CFE0D2; font-weight:400;
+  }
+  .reset-btn{
+    margin-left:auto;
+    background:rgba(255,255,255,0.12);
+    border:none; color:var(--white);
+    font-size:11px; padding:6px 10px; border-radius:20px;
+    cursor:pointer;
+  }
+
+  /* Chat area */
+  #chat{
+    flex:1; overflow-y:auto;
+    padding:16px 12px 8px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .msg{
+    max-width:84%;
+    margin-bottom:10px;
+    padding:10px 13px;
+    border-radius:14px;
+    font-size:14.5px;
+    line-height:1.48;
+    white-space:pre-wrap;
+    animation:rise .18s ease-out;
+  }
+  @keyframes rise{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .bot{
+    background:var(--white);
+    color:var(--ink);
+    border-bottom-left-radius:4px;
+    margin-right:auto;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+  }
+  .user{
+    background:var(--ivy);
+    color:var(--white);
+    border-bottom-right-radius:4px;
+    margin-left:auto;
+  }
+  .msg strong{display:block; font-size:12px; text-transform:uppercase; letter-spacing:.03em; opacity:.55; margin-bottom:4px; font-weight:600;}
+  .bot strong{color:var(--moss);}
+  .user strong{color:#CFE0D2;}
+
+  .chips{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin:6px 0 14px;
+  }
+  .chip{
+    background:var(--white);
+    border:1.5px solid var(--sand-dark);
+    color:var(--ivy);
+    padding:8px 13px;
+    border-radius:20px;
+    font-size:13.5px;
+    cursor:pointer;
+    font-weight:500;
+  }
+  .chip:active{background:var(--sand-dark);}
+
+  .escalate-box{
+    background:#FBF3E4;
+    border:1.5px dashed var(--marigold);
+    border-radius:12px;
+    padding:12px 14px;
+    margin:4px 0 14px;
+    font-size:13.5px;
+  }
+  .escalate-box button{
+    margin-top:8px;
+    background:var(--marigold);
+    border:none; color:var(--ivy);
+    font-weight:700; font-size:13px;
+    padding:8px 14px; border-radius:8px;
+    cursor:pointer;
+  }
+
+  /* Input bar */
+  #inputBar{
+    flex-shrink:0;
+    display:flex; gap:8px;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    background:var(--white);
+    border-top:1px solid var(--sand-dark);
+  }
+  #textInput{
+    flex:1;
+    border:1.5px solid var(--sand-dark);
+    border-radius:22px;
+    padding:11px 16px;
+    font-size:15px;
+    outline:none;
+    background:var(--sand);
+    color:var(--ink);
+  }
+  #textInput:focus{border-color:var(--moss);}
+  #sendBtn{
+    background:var(--ivy);
+    color:var(--white);
+    border:none;
+    border-radius:22px;
+    padding:0 20px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  #sendBtn:active{background:var(--ivy-light);}
+
+  ::-webkit-scrollbar{width:0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">LS</div>
+  <div>
+    <h1>LokOS Sahayak</h1>
+    <p>Field staff support · answers anytime</p>
+  </div>
+  <button class="reset-btn" onclick="resetChat()">Restart</button>
+</header>
+
+<div id="chat"></div>
+
+<div id="inputBar">
+  <input id="textInput" type="text" placeholder="Type your question…" autocomplete="off" />
+  <button id="sendBtn" onclick="handleSend()">Send</button>
+</div>
+
+<script>
+/* ========================================================
+   KNOWLEDGE BASE — edit this array to add/update Q&A.
+   Each entry: id, keywords (lowercase, match if ANY found),
+   answer (shown as bot reply), escalateHint (optional extra
+   line shown only when user says it's still not resolved).
+   ======================================================== */
+const KB = [
+  {
+    id: "LOGIN-01",
+    keywords: ["otp", "login", "log in", "sign in", "password"],
+    answer: "OTP / Login issue:\n1. Check network signal, wait 60 seconds and retry.\n2. Confirm your mobile number matches the one registered in your LokOS profile.\n3. Try 'Resend OTP' — max 3 attempts, then wait 10 minutes.\n4. Check if DND is active on your SIM.",
+    escalateHint: "If your registered number itself is wrong or changed, this needs an admin correction — I'll log it for you."
+  },
+  {
+    id: "AADHAAR-01",
+    keywords: ["aadhaar", "adhar", "ekyc", "kyc", "verification failed"],
+    answer: "Aadhaar verification issue:\n1. Re-check the spelling of the name exactly as printed on the Aadhaar card — no short forms.\n2. Confirm date of birth format is correct.\n3. Retry on a stronger network connection.\n4. If it still fails, use the manual Aadhaar upload + offline verification option.",
+    escalateHint: "If it fails again after 3 tries with correct data, this is likely a backend/UIDAI-side issue."
+  },
+  {
+    id: "SYNC-01",
+    keywords: ["sync", "syncing", "upload", "not uploading", "offline"],
+    answer: "Data not syncing:\n1. Move to an area with a stable network connection.\n2. Do not close the app while sync is in progress.\n3. Check your device storage isn't full.\n4. Use the 'Retry Sync' option from the app menu.",
+    escalateHint: "If it shows 'synced' on your device but isn't visible on the admin dashboard after 24 hours, that's a backend issue — I'll log it."
+  },
+  {
+    id: "LOAN-01",
+    keywords: ["loan", "disbursement", "approval", "application stuck"],
+    answer: "Loan application stuck:\n1. Check the current status/stage shown in the app.\n2. Note which role needs to approve next — VO, CLF, or Bank level.\n3. Follow up directly with that specific approver — this is usually a pending-approval matter, not a technical fault.",
+    escalateHint: "If it has been stuck beyond 7 days with no movement at all, I'll log this for an MIS/admin check."
+  },
+  {
+    id: "DOC-01",
+    keywords: ["document", "photo", "upload failed", "pdf", "id proof"],
+    answer: "Document upload issue:\n1. Check file size — very large photos may fail to upload.\n2. Ensure the file is in the accepted format (PDF/JPEG).\n3. Retry on a stronger connection.\n4. Restart the app if the upload screen is frozen.",
+    escalateHint: "If the same document keeps failing after these steps, I'll log it for a technical check."
+  }
+];
+
+const GREETING =
+`Namaste! I'm LokOS Sahayak — here to help with common app issues, anytime.
+
+Pick a topic below, or just type your question in your own words.`;
+
+const NOT_FOUND =
+`I couldn't find a direct match for that yet. Try different words, pick a topic below, or tell me it's "not resolved" and I'll log it for the support team.`;
+
+let lastMatched = null; // holds last matched KB entry for escalation context
+
+const chat = document.getElementById('chat');
+const input = document.getElementById('textInput');
+
+function addMsg(text, who){
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  const label = document.createElement('strong');
+  label.textContent = who === 'bot' ? 'Sahayak' : 'You';
+  div.appendChild(label);
+  div.appendChild(document.createTextNode(text));
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addChips(){
+  const wrap = document.createElement('div');
+  wrap.className = 'chips';
+  const topics = [
+    ["OTP / Login", "otp login issue"],
+    ["Aadhaar", "aadhaar verification issue"],
+    ["Sync issue", "data not syncing"],
+    ["Loan status", "loan application stuck"],
+    ["Document upload", "document upload failed"]
+  ];
+  topics.forEach(([label, query])=>{
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.textContent = label;
+    c.onclick = ()=> submitQuery(query, label);
+    wrap.appendChild(c);
+  });
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function findMatch(query){
+  const q = query.toLowerCase();
+  let best = null, bestScore = 0;
+  KB.forEach(entry=>{
+    let score = 0;
+    entry.keywords.forEach(k=>{ if(q.includes(k)) score++; });
+    if(score > bestScore){ bestScore = score; best = entry; }
+  });
+  return bestScore > 0 ? best : null;
+}
+
+function isResolvedSaid(q){
+  return /\b(resolved|solved|thanks|thank you|fixed|works|ok got it|okay got it)\b/i.test(q);
+}
+function isNotResolvedSaid(q){
+  return /\b(not resolved|not working|still|didn'?t work|no|escalate|need help|talk to someone|human)\b/i.test(q);
+}
+
+function submitQuery(query, displayLabel){
+  addMsg(displayLabel || query, 'user');
+  respondTo(query);
+}
+
+function respondTo(query){
+  if(isNotResolvedSaid(query) && lastMatched){
+    showEscalation(lastMatched, query);
+    return;
+  }
+  if(isResolvedSaid(query)){
+    addMsg("Glad that helped! Ask another question anytime.", 'bot');
+    addChips();
+    return;
+  }
+
+  const match = findMatch(query);
+  if(match){
+    lastMatched = match;
+    addMsg(match.answer, 'bot');
+    addMsg('Did this solve it? Type "resolved" or "not resolved".', 'bot');
+  } else {
+    lastMatched = null;
+    addMsg(NOT_FOUND, 'bot');
+    showEscalation(null, query);
+  }
+}
+
+function showEscalation(entry, originalQuery){
+  const box = document.createElement('div');
+  box.className = 'escalate-box';
+  box.innerHTML =
+    (entry ? (entry.escalateHint || "Still stuck? I'll log this so the support team can follow up.") : "I'll log this question so the support team can follow up.") +
+    "<br><button type='button'>Log this for support</button>";
+  box.querySelector('button').onclick = ()=> logEscalation(entry, originalQuery, box);
+  chat.appendChild(box);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function logEscalation(entry, originalQuery, box){
+  const ticket = {
+    time: new Date().toISOString(),
+    category: entry ? entry.id : 'UNMATCHED',
+    query: originalQuery
+  };
+  try{
+    const existing = JSON.parse(localStorage.getItem('lokos_tickets') || '[]');
+    existing.push(ticket);
+    localStorage.setItem('lokos_tickets', JSON.stringify(existing));
+  }catch(e){}
+  box.innerHTML = "Logged. Reference: " + ticket.time.slice(0,16).replace('T',' ') + "<br><span style='font-size:12px;opacity:.7'>The support team can review logged questions and add this topic to the guide.</span>";
+  addChips();
+}
+
+function handleSend(){
+  const val = input.value.trim();
+  if(!val) return;
+  input.value = '';
+  submitQuery(val);
+}
+
+input.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ handleSend(); }
+});
+
+function resetChat(){
+  chat.innerHTML = '';
+  lastMatched = null;
+  addMsg(GREETING, 'bot');
+  addChips();
+}
+
+resetChat();
+</script>
+
+</body>
+</html>
